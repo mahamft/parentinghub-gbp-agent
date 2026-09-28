@@ -1,0 +1,48 @@
+name: ParentingHub Weekly GBP Automated Publisher
+
+on:
+  schedule:
+    # Runs every Monday at 05:00 UTC (10:00 AM Pakistan Standard Time)
+    - cron: '0 5 * * 1'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  publish-gbp-post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Execute automated post & publish
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'gemini-3.5-flash-lite' }}
+          GEMINI_TEMPERATURE: 0.7
+          GBP_WEBHOOK_URL: ${{ secrets.GBP_WEBHOOK_URL }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+          LOCATION_ID: ${{ secrets.LOCATION_ID || 'locations/17062544117938448005' }}
+          CTA_ACTION: 'LEARN_MORE'
+          CTA_URL: 'https://parentinghub.pk/'
+        run: |
+          python main.py --publish
+
+      - name: Commit and push updated post history
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/post_history.json || true
+          git commit -m "chore: update post history and pillar rotation [skip ci]" || true
+          git push || true

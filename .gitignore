@@ -1,0 +1,21 @@
+# Python virtual environment & cache
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environment secrets
+.env
+*.local.env
+
+# Data & logs (preserve structure if needed)
+data/post_history.json
+*.log
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
